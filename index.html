@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Conjunto de Dados – Portal dados.gov.br (MESP)</title>
+  <meta name="description" content="Formulário oficial de cadastro e atualização de conjuntos de dados no Portal dados.gov.br para o Ministério do Esporte (MESP).">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Top Gov Header -->
+  <header class="gov-header">
+    <div class="gov-header-container">
+      <div class="gov-logo-group">
+        <div class="gov-flag-stripe">
+          <div class="green"></div>
+          <div class="yellow"></div>
+          <div class="blue"></div>
+        </div>
+        <div class="gov-header-titles">
+          <h1>dados.gov.br</h1>
+          <p>Ministério do Esporte (MESP) • Plano de Dados Abertos (PDA)</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn-ghost-light" id="btn-fill-demo" title="Preencher com dados de exemplo">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Preenchimento Demo
+        </button>
+        <button type="button" class="btn-ghost-light" id="btn-toggle-admin" title="Ver respostas no Painel Admin">
+          <i class="fa-solid fa-user-shield"></i> Painel Admin <span class="admin-count-badge" id="admin-badge-count">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="main-container">
+
+    <!-- USER FORM VIEW CONTAINER -->
+    <div id="user-view">
+      <!-- Wizard Step Indicator Bar -->
+      <nav aria-label="Progresso do formulário" class="wizard-progress">
+      <div class="wizard-progress-bar" id="progress-bar"></div>
+      <div class="step-indicator active" data-step="1" id="indicator-step-1">
+        <div class="step-number">1</div>
+        <span class="step-title">Identificação do Conjunto</span>
+      </div>
+      <div class="step-indicator" data-step="2" id="indicator-step-2">
+        <div class="step-number">2</div>
+        <span class="step-title">Recursos e Dicionário</span>
+      </div>
+      <div class="step-indicator" data-step="3" id="indicator-step-3">
+        <div class="step-number">3</div>
+        <span class="step-title">Revisão e Envio</span>
+      </div>
+    </nav>
+
+    <!-- Main Form Element -->
+    <form id="dataset-form" novalidate>
+
+      <!-- SECTION 1: Identificação do Conjunto de Dados -->
+      <section class="form-section active" id="section-step-1">
+        <div class="section-header">
+          <h3>Seção 1: Identificação do Conjunto de Dados</h3>
+          <p>Preencha os metadados principais para cadastro no Portal dados.gov.br</p>
+        </div>
+
+        <!-- Q1 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">1.</span>
+            <span class="question-title">Dados abertos</span>
+            <span class="required-star">*</span>
+          </div>
+          <p class="question-description">Escolha a condição de abertura dos dados</p>
+          <div class="options-list">
+            <label class="option-item">
+              <input type="radio" name="q1_dados_abertos" value="Aberto" required>
+              <span>Aberto</span>
+            </label>
+            <label class="option-item">
+              <input type="radio" name="q1_dados_abertos" value="Não aberto">
+              <span>Não aberto</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">2.</span>
+            <span class="question-title">Título da base de dados</span>
+            <span class="required-star">*</span>
+          </div>
+          <p class="question-description">Escreva por extenso conforme o nome da base cadastrada junto a CGU</p>
+          <input type="text" id="q2_titulo_base" name="q2_titulo_base" class="form-input" placeholder="Ex: Folha de Pagamento aos Atletas do Bolsa Atleta" required>
+        </div>
+
+        <!-- Q3 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">3.</span>
+            <span class="question-title">Descrição</span>
+          </div>
+          <p class="question-description">Descrição detalhada do conteúdo e abrangência da base de dados</p>
+          <textarea id="q3_descricao" name="q3_descricao" class="form-textarea" placeholder="Ex: Dados da Folha de Pagamento aos atletas/beneficiários do Programa Bolsa Atleta, em todas as categorias de Bolsa"></textarea>
+        </div>
+
+        <!-- Q4 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">4.</span>
+            <span class="question-title">Área técnica responsável</span>
+          </div>
+          <p class="question-description">Periodicidade de atualização - conforme PDA - Se atentem às regras determinadas no plano de dados abertos</p>
+          <input type="text" id="q4_area_tecnica" name="q4_area_tecnica" class="form-input" placeholder="Ex: Secretaria Nacional de Esporte de Alto Rendimento (SNEAR)">
+        </div>
+
+        <!-- Q5 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">5.</span>
+            <span class="question-title">E-mail da área técnica responsável</span>
+          </div>
+          <input type="email" id="q5_email_area" name="q5_email_area" class="form-input" placeholder="Ex: bolsa.atleta@esporte.gov.br">
+        </div>
+
+        <!-- Q6 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">6.</span>
+            <span class="question-title">Periodicidade de atualização</span>
+          </div>
+          <select id="q6_periodicidade" name="q6_periodicidade" class="form-select">
+            <option value="">Selecione a periodicidade...</option>
+            <option value="Diária">Diária</option>
+            <option value="Semanal">Semanal</option>
+            <option value="Quinzenal">Quinzenal</option>
+            <option value="Mensal">Mensal</option>
+            <option value="Trimestral">Trimestral</option>
+            <option value="Quadrimestral">Quadrimestral</option>
+            <option value="Semestral">Semestral</option>
+            <option value="Anual">Anual</option>
+            <option value="Sob Demanda">Sob Demanda</option>
+          </select>
+        </div>
+
+        <!-- Q7 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">7.</span>
+            <span class="question-title">Temas</span>
+          </div>
+          <select id="q7_temas" name="q7_temas" class="form-select">
+            <option value="">Selecione o tema principal...</option>
+            <option value="Abastecimento">Abastecimento</option>
+            <option value="Administração">Administração</option>
+            <option value="Agropecuária, Pesca e Extrativismo">Agropecuária, Pesca e Extrativismo</option>
+            <option value="Comunicações">Comunicações</option>
+            <option value="Comércio e Serviços">Comércio e Serviços</option>
+            <option value="Cultura">Cultura</option>
+            <option value="Defesa Nacional">Defesa Nacional</option>
+            <option value="Economia e Finanças">Economia e Finanças</option>
+            <option value="Educação">Educação</option>
+            <option value="Energia">Energia</option>
+            <option value="Esporte e Lazer">Esporte e Lazer</option>
+            <option value="Habitação">Habitação</option>
+            <option value="Indústria">Indústria</option>
+            <option value="Infraestrutura e Fomento">Infraestrutura e Fomento</option>
+            <option value="Meio Ambiente">Meio Ambiente</option>
+            <option value="Pesquisa e Desenvolvimento">Pesquisa e Desenvolvimento</option>
+            <option value="Planejamento e Gestão">Planejamento e Gestão</option>
+            <option value="Previdência Social">Previdência Social</option>
+            <option value="Proteção Social">Proteção Social</option>
+            <option value="Relações Internacionais">Relações Internacionais</option>
+            <option value="Saneamento">Saneamento</option>
+            <option value="Saúde">Saúde</option>
+            <option value="Segurança e Ordem Pública">Segurança e Ordem Pública</option>
+            <option value="Trabalho">Trabalho</option>
+            <option value="Transportes">Transportes</option>
+            <option value="Urbanismo">Urbanismo</option>
+          </select>
+        </div>
+
+        <!-- Q8 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">8.</span>
+            <span class="question-title">Possui relação com ODS?</span>
+          </div>
+          <div class="options-list">
+            <label class="option-item">
+              <input type="radio" name="q8_relacao_ods" value="SIM" id="q8_sim">
+              <span>SIM</span>
+            </label>
+            <label class="option-item">
+              <input type="radio" name="q8_relacao_ods" value="NÂO" id="q8_nao">
+              <span>NÃO</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Q9 (Conditional logic: visible if Q8 = SIM) -->
+        <div class="question-card" id="card-q9-ods" style="display: none;">
+          <div class="question-header">
+            <span class="question-number">9.</span>
+            <span class="question-title">Objetivos de Desenvolvimento Sustentável (ODS)</span>
+            <span class="required-star">*</span>
+          </div>
+          <p class="question-description">Selecione todos os Objetivos da Agenda 2030 associados a este conjunto de dados</p>
+          <div class="options-grid">
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Erradicação da Pobreza"> Erradicação da Pobreza</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Fome Zero e Agricultura Sustentável"> Fome Zero e Agr. Sustentável</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Saúde e Bem-Estar"> Saúde e Bem-Estar</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Educação de Qualidade"> Educação de Qualidade</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Igualdade de Gênero"> Igualdade de Gênero</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Água Limpa e Saneamento"> Água Limpa e Saneamento</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Energia Limpa e Acessível"> Energia Limpa e Acessível</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Trabalho Decente e Crescimento Econômico"> Trabalho Decente e Cresc. Econômico</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Indústria, Inovação e Infraestrutura"> Indústria, Inovação e Infraestrutura</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Redução das Desigualdades"> Redução das Desigualdades</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Cidades e Comunidades Sustentáveis"> Cidades e Comunidades Sustentáveis</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Consumo e Produção Sustentáveis"> Consumo e Produção Sustentáveis</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Ação contra a Mudança Global do Clima"> Mudança Global do Clima</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Vida na Água"> Vida na Água</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Vida Terrestre"> Vida Terrestre</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Paz, Justiça e Instituições Eficazes"> Paz, Justiça e Instituições Eficazes</label>
+            <label class="option-item"><input type="checkbox" name="q9_ods" value="Parcerias e Meios de Implementação"> Parcerias e Meios de Implementação</label>
+          </div>
+        </div>
+
+        <!-- Q10 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">10.</span>
+            <span class="question-title">Possui dados de raça/etnia?</span>
+          </div>
+          <div class="options-list">
+            <label class="option-item"><input type="radio" name="q10_raca" value="Sim"> Sim</label>
+            <label class="option-item"><input type="radio" name="q10_raca" value="Não"> Não</label>
+            <label class="option-item"><input type="radio" name="q10_raca" value="Não se aplica"> Não se aplica</label>
+          </div>
+        </div>
+
+        <!-- Q11 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">11.</span>
+            <span class="question-title">Possui dados de gênero?</span>
+          </div>
+          <div class="options-list">
+            <label class="option-item"><input type="radio" name="q11_genero" value="Sim"> Sim</label>
+            <label class="option-item"><input type="radio" name="q11_genero" value="Não"> Não</label>
+            <label class="option-item"><input type="radio" name="q11_genero" value="Não se aplica"> Não se aplica</label>
+          </div>
+        </div>
+
+        <!-- Q12 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">12.</span>
+            <span class="question-title">Palavras-chave</span>
+          </div>
+          <p class="question-description">Separe por vírgulas. Ex.: esporte, bolsa atleta, pagamentos</p>
+          <input type="text" id="q12_palavras_chave" name="q12_palavras_chave" class="form-input" placeholder="esporte, bolsa atleta, pagamentos">
+        </div>
+
+        <!-- Q13 & Q14 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-title">Cobertura temporal</span>
+          </div>
+          <p class="question-description">Indicar a data ou período de início e fim dos dados disponibilizados</p>
+          <div class="date-grid">
+            <div>
+              <label for="q13_cobertura_inicio" class="question-title" style="font-size: 0.9rem;">13. Início:</label>
+              <input type="date" id="q13_cobertura_inicio" name="q13_cobertura_inicio" class="form-input" style="margin-top: 0.3rem;">
+            </div>
+            <div>
+              <label for="q14_cobertura_fim" class="question-title" style="font-size: 0.9rem;">14. Fim:</label>
+              <input type="date" id="q14_cobertura_fim" name="q14_cobertura_fim" class="form-input" style="margin-top: 0.3rem;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Q15 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">15.</span>
+            <span class="question-title">Cobertura espacial</span>
+          </div>
+          <div class="options-list">
+            <label class="option-item"><input type="radio" name="q15_cobertura_espacial" value="Federal"> Federal</label>
+            <label class="option-item"><input type="radio" name="q15_cobertura_espacial" value="Estadual / Distrital"> Estadual / Distrital</label>
+            <label class="option-item"><input type="radio" name="q15_cobertura_espacial" value="Municipal"> Municipal</label>
+          </div>
+        </div>
+
+        <!-- Q16 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">16.</span>
+            <span class="question-title">Granularidade espacial</span>
+          </div>
+          <div class="options-list">
+            <label class="option-item"><input type="radio" name="q16_granularidade_espacial" value="Federal"> Federal</label>
+            <label class="option-item"><input type="radio" name="q16_granularidade_espacial" value="Estadual / Distrital"> Estadual / Distrital</label>
+            <label class="option-item"><input type="radio" name="q16_granularidade_espacial" value="Municipal"> Municipal</label>
+          </div>
+        </div>
+
+        <!-- Q17 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">17.</span>
+            <span class="question-title">Versão (numérica)</span>
+          </div>
+          <input type="text" id="q17_versao" name="q17_versao" class="form-input" placeholder="Ex: 1.0">
+        </div>
+
+        <!-- Q18 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">18.</span>
+            <span class="question-title">Atualização da versão?</span>
+          </div>
+          <div class="options-list">
+            <label class="option-item"><input type="radio" name="q18_atualizacao_versao" value="Sim"> Sim</label>
+            <label class="option-item"><input type="radio" name="q18_atualizacao_versao" value="Não"> Não</label>
+          </div>
+        </div>
+
+        <!-- Q19 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">19.</span>
+            <span class="question-title">Descontinuado?</span>
+          </div>
+          <div class="options-list">
+            <label class="option-item"><input type="radio" name="q19_descontinuado" value="Sim"> Sim</label>
+            <label class="option-item"><input type="radio" name="q19_descontinuado" value="Não"> Não</label>
+          </div>
+        </div>
+
+        <div class="wizard-actions">
+          <div></div> <!-- Empty spacer -->
+          <button type="button" class="btn btn-primary" id="btn-step1-next">
+            Avançar <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- SECTION 2: Recursos do Conjunto de Dados -->
+      <section class="form-section" id="section-step-2">
+        <div class="section-header">
+          <h3>Seção 2: Recursos e Dicionário de Dados</h3>
+          <p>Anexe e descreva os arquivos de dados (arquivos CSV/XLSX/PDF) e o dicionário de dados.</p>
+        </div>
+
+        <!-- Q20 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">20.</span>
+            <span class="question-title">Título do Recurso</span>
+          </div>
+          <input type="text" id="q20_titulo_recurso" name="q20_titulo_recurso" class="form-input" placeholder="Ex: Tabela de Pagamentos Bolsa Atleta 2024">
+        </div>
+
+        <!-- Q21 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">21.</span>
+            <span class="question-title">Descrição do Recurso</span>
+          </div>
+          <p class="question-description">Inclua metadados (políticas/serviços impactados e principais informações)</p>
+          <textarea id="q21_descricao_recurso" name="q21_descricao_recurso" class="form-textarea" placeholder="Descreva os metadados do recurso disponibilizado..."></textarea>
+        </div>
+
+        <!-- Q22 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">22.</span>
+            <span class="question-title">Arquivo do Recurso</span>
+            <span class="badge badge-ouv">[PERGUNTA NÃO ANÔNIMA]</span>
+          </div>
+          <div class="file-upload-zone" id="upload-zone-q22">
+            <div class="file-upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+            <div class="file-upload-text">Clique ou arraste o arquivo do recurso aqui</div>
+            <div class="file-upload-subtext">Limite: 1 arquivo (até 10MB). Permitidos: Word, Excel, PPT, PDF, Imagem, Vídeo, Áudio</div>
+            <input type="file" id="q22_arquivo_recurso" name="q22_arquivo_recurso" class="file-upload-input">
+            <div class="file-preview" id="preview-q22"></div>
+          </div>
+        </div>
+
+        <!-- Q23 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">23.</span>
+            <span class="question-title">Título do dicionário de dados</span>
+          </div>
+          <input type="text" id="q23_titulo_dicionario" name="q23_titulo_dicionario" class="form-input" placeholder="Ex: Dicionário de Dados - Bolsa Atleta">
+        </div>
+
+        <!-- Q24 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">24.</span>
+            <span class="question-title">Descrição resumida do dicionário de dados</span>
+          </div>
+          <textarea id="q24_descricao_dicionario" name="q24_descricao_dicionario" class="form-textarea" placeholder="Detalhamento do significado das colunas e tipos de dados..."></textarea>
+        </div>
+
+        <!-- Q25 -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">25.</span>
+            <span class="question-title">Arquivo do Dicionário de dados</span>
+            <span class="badge badge-ouv">[PERGUNTA NÃO ANÔNIMA]</span>
+          </div>
+          <div class="file-upload-zone" id="upload-zone-q25">
+            <div class="file-upload-icon"><i class="fa-solid fa-file-csv"></i></div>
+            <div class="file-upload-text">Clique ou arraste o dicionário de dados aqui</div>
+            <div class="file-upload-subtext">Limite: 1 arquivo (até 10MB). Permitidos: Word, Excel, PPT, PDF, Imagem, Vídeo, Áudio</div>
+            <input type="file" id="q25_arquivo_dicionario" name="q25_arquivo_dicionario" class="file-upload-input">
+            <div class="file-preview" id="preview-q25"></div>
+          </div>
+        </div>
+
+        <div class="wizard-actions">
+          <button type="button" class="btn btn-secondary" id="btn-step2-prev">
+            <i class="fa-solid fa-arrow-left"></i> Voltar
+          </button>
+          <button type="button" class="btn btn-primary" id="btn-step2-next">
+            Revisar Dados <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- SECTION 3: Revisão e Envio -->
+      <section class="form-section" id="section-step-3">
+        <div class="section-header">
+          <h3>Seção 3: Revisão e Envio</h3>
+          <p>Confirme os dados antes de realizar o envio oficial do formulário.</p>
+        </div>
+
+        <div class="summary-container" id="summary-content">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <div class="wizard-actions" style="margin-top: 2rem;">
+          <button type="button" class="btn btn-secondary" id="btn-step3-prev">
+            <i class="fa-solid fa-arrow-left"></i> Voltar
+          </button>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button type="button" class="btn btn-outline" id="btn-print">
+              <i class="fa-solid fa-print"></i> Imprimir / PDF
+            </button>
+            <button type="submit" class="btn btn-success" id="btn-submit">
+              <i class="fa-solid fa-paper-plane"></i> Enviar Formulário
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </form>
+    </div> <!-- End of #user-view -->
+
+    <!-- ADMIN VIEW CONTAINER -->
+    <div id="admin-view" class="admin-container" style="display: none;">
+      <div class="admin-header-bar">
+        <div>
+          <h2><i class="fa-solid fa-user-shield"></i> Painel do Administrador</h2>
+          <p>Gerencie e visualize todas as respostas enviadas pelo formulário.</p>
+        </div>
+        <div class="admin-top-actions">
+          <button type="button" class="btn btn-outline" id="btn-admin-export-csv">
+            <i class="fa-solid fa-file-csv"></i> Exportar Tudo (CSV)
+          </button>
+          <button type="button" class="btn btn-outline" id="btn-admin-logout" title="Sair do Painel Admin">
+            <i class="fa-solid fa-lock"></i> Sair / Bloquear
+          </button>
+        </div>
+      </div>
+
+      <!-- Metrics Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon blue"><i class="fa-solid fa-inbox"></i></div>
+          <div class="metric-body">
+            <div class="metric-value" id="metric-total">0</div>
+            <div class="metric-label">Total de Respostas</div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon green"><i class="fa-solid fa-lock-open"></i></div>
+          <div class="metric-body">
+            <div class="metric-value" id="metric-abertos">0</div>
+            <div class="metric-label">Dados Abertos</div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon yellow"><i class="fa-solid fa-globe"></i></div>
+          <div class="metric-body">
+            <div class="metric-value" id="metric-ods">0</div>
+            <div class="metric-label">Com Relação a ODS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter & Search Bar -->
+      <div class="admin-search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="admin-search-input" class="form-input" placeholder="Buscar por título da base, área técnica, email ou palavras-chave...">
+      </div>
+
+      <!-- Submissions Table -->
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th># ID</th>
+              <th>Data / Hora</th>
+              <th>Título da Base de Dados</th>
+              <th>Área Técnica</th>
+              <th>Periodicidade</th>
+              <th>Abertura</th>
+              <th style="text-align: center;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="admin-table-body">
+            <!-- Populated dynamically by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal Submission Confirmation -->
+  <div class="modal-backdrop" id="success-modal">
+    <div class="modal-box">
+      <div class="modal-icon"><i class="fa-solid fa-check"></i></div>
+      <h3 class="modal-title">Formulário Enviado!</h3>
+      <p class="modal-desc">As informações foram registradas com sucesso no Painel do Administrador.</p>
+      <button type="button" class="btn btn-primary" id="btn-modal-close">Concluir</button>
+    </div>
+  </div>
+
+  <!-- Modal Admin Submission Detail -->
+  <div class="modal-backdrop" id="admin-detail-modal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header-flex">
+        <h3><i class="fa-solid fa-file-lines"></i> Detalhes da Resposta</h3>
+        <button type="button" class="btn-close-icon" id="btn-admin-modal-close">&times;</button>
+      </div>
+      <div class="modal-body-scroll" id="admin-modal-body">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer-flex">
+        <button type="button" class="btn btn-outline" id="btn-admin-modal-print">
+          <i class="fa-solid fa-print"></i> Imprimir esta Resposta
+        </button>
+        <button type="button" class="btn btn-primary" id="btn-admin-modal-ok">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Admin Passcode Authentication -->
+  <div class="modal-backdrop" id="admin-auth-modal">
+    <div class="modal-box">
+      <div class="modal-icon" style="background: #e0f2fe; color: var(--primary-blue);">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <h3 class="modal-title">Acesso Restrito ao Admin</h3>
+      <p class="modal-desc">Informe a palavra-chave (token) para acessar o painel de respostas do formulário.</p>
+      
+      <div style="position: relative; margin-bottom: 1.25rem; text-align: left;">
+        <label for="admin-token-input" style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Palavra-chave / Token de Acesso:</label>
+        <div style="position: relative;">
+          <input type="password" id="admin-token-input" class="form-input" placeholder="Digite a palavra-chave (padrão: admin123)..." style="padding-right: 2.5rem;">
+          <button type="button" id="btn-toggle-token-visibility" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;" title="Mostrar/Ocultar palavra-chave">
+            <i class="fa-solid fa-eye" id="icon-token-eye"></i>
+          </button>
+        </div>
+        <div id="admin-auth-error" style="color: var(--error-color); font-size: 0.85rem; margin-top: 0.4rem; display: none;">
+          <i class="fa-solid fa-circle-exclamation"></i> Palavra-chave incorreta. Tente novamente.
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary" id="btn-admin-auth-cancel">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btn-admin-auth-submit">
+          <i class="fa-solid fa-key"></i> Acessar Painel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Alert -->
+  <div class="toast-alert" id="toast">
+    <i class="fa-solid fa-circle-check"></i> <span id="toast-message">Rascunho salvo automaticamente.</span>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>Portal dados.gov.br • Ministério do Esporte (MESP) • Desenvolvido com Padrão Digital Gov.br</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
