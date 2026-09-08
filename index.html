@@ -13,6 +13,221 @@
 
 <body>
 
+  <!-- AUTH SCREENS (full-bleed, shown before login / when a password change is required) -->
+  <div id="auth-screen">
+
+    <!-- LOGIN VIEW -->
+    <div id="login-view" class="pda-auth-page">
+      <div class="pda-auth-stripe">
+        <div class="green"></div>
+        <div class="yellow"></div>
+        <div class="blue"></div>
+      </div>
+      <div class="pda-auth-body">
+        <div class="pda-auth-brand">
+          <svg class="pda-auth-brand-bg" viewBox="0 0 640 900" fill="none" preserveAspectRatio="xMaxYMin slice">
+            <g stroke="#4d7ab5" stroke-width="1.2" opacity="0.45">
+              <line x1="120" y1="140" x2="260" y2="220"></line>
+              <line x1="260" y1="220" x2="200" y2="340"></line>
+              <line x1="260" y1="220" x2="420" y2="200"></line>
+              <line x1="420" y1="200" x2="520" y2="300"></line>
+              <line x1="200" y1="340" x2="340" y2="420"></line>
+              <line x1="340" y1="420" x2="480" y2="400"></line>
+              <line x1="480" y1="400" x2="520" y2="300"></line>
+              <line x1="340" y1="420" x2="300" y2="560"></line>
+              <line x1="300" y1="560" x2="440" y2="620"></line>
+              <line x1="440" y1="620" x2="420" y2="740"></line>
+              <line x1="480" y1="400" x2="560" y2="520"></line>
+              <line x1="560" y1="520" x2="440" y2="620"></line>
+              <line x1="120" y1="140" x2="180" y2="60"></line>
+            </g>
+            <g fill="#dce8fb">
+              <circle cx="120" cy="140" r="4" opacity="0.7"></circle>
+              <circle cx="180" cy="60" r="3" opacity="0.5"></circle>
+              <circle cx="260" cy="220" r="7" opacity="0.85"></circle>
+              <circle cx="200" cy="340" r="4" opacity="0.6"></circle>
+              <circle cx="420" cy="200" r="5" opacity="0.7"></circle>
+              <circle cx="520" cy="300" r="8" opacity="0.9"></circle>
+              <circle cx="340" cy="420" r="6" opacity="0.75"></circle>
+              <circle cx="480" cy="400" r="4" opacity="0.6"></circle>
+              <circle cx="300" cy="560" r="5" opacity="0.65"></circle>
+              <circle cx="440" cy="620" r="7" opacity="0.85"></circle>
+              <circle cx="420" cy="740" r="4" opacity="0.5"></circle>
+              <circle cx="560" cy="520" r="5" opacity="0.7"></circle>
+            </g>
+          </svg>
+
+          <div class="pda-auth-brand-header">
+            <div class="pda-auth-brand-icon"><i class="fa-solid fa-circle-nodes"></i></div>
+            <div>
+              <div class="pda-auth-brand-name">Base de Dados MEsp</div>
+              <div class="pda-auth-brand-subname">MINISTÉRIO DO ESPORTE</div>
+            </div>
+          </div>
+
+          <div class="pda-auth-brand-main">
+            <div class="pda-auth-pill"><i class="fa-solid fa-circle-check"></i> Plano de Dados Abertos</div>
+            <h1 class="pda-auth-headline">Transparência que conecta dados e sociedade</h1>
+            <p class="pda-auth-desc">Preencha e consulte os conjuntos de dados abertos do Ministério do Esporte publicados em dados.gov.br, em um único ambiente integrado.</p>
+            <div class="pda-auth-badges">
+              <span class="pda-auth-badge"><i class="fa-solid fa-chart-column"></i> Dados atualizados</span>
+              <span class="pda-auth-badge"><i class="fa-solid fa-globe"></i> Acesso público</span>
+              <span class="pda-auth-badge"><i class="fa-solid fa-shield-halved"></i> Padrão dados.gov.br</span>
+            </div>
+          </div>
+
+          <div class="pda-auth-brand-footer">Ministério do Esporte • Governo Federal do Brasil</div>
+        </div>
+
+        <div class="pda-auth-form-panel">
+          <div class="pda-auth-form-box">
+            <div class="pda-auth-form-icon"><i class="fa-solid fa-lock"></i></div>
+            <h2>Acesso ao Sistema PDA</h2>
+            <p>Entre com o e-mail e senha cadastrados pela CGTI para preencher ou consultar os dados do Plano de Dados Abertos.</p>
+
+            <form id="login-form" novalidate>
+              <div class="pda-field">
+                <label for="login-email">E-mail</label>
+                <div class="pda-input-wrap">
+                  <i class="fa-solid fa-envelope"></i>
+                  <input type="email" id="login-email" placeholder="nome@esporte.gov.br" autocomplete="username" required>
+                </div>
+              </div>
+
+              <div class="pda-field">
+                <div class="pda-field-label-row">
+                  <label for="login-password">Senha</label>
+                  <button type="button" id="btn-forgot-password" class="pda-link-btn">Esqueci minha senha</button>
+                </div>
+                <div class="pda-input-wrap">
+                  <i class="fa-solid fa-lock"></i>
+                  <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required>
+                  <button type="button" id="btn-toggle-login-password" class="pda-eye-btn" title="Mostrar/Ocultar senha">
+                    <i class="fa-solid fa-eye" id="icon-login-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div id="login-error" class="pda-error" style="display:none;">
+                <i class="fa-solid fa-circle-exclamation"></i> <span id="login-error-text">E-mail ou senha incorretos.</span>
+              </div>
+
+              <button type="submit" class="pda-submit-btn" id="btn-login-submit">
+                Entrar <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </form>
+
+            <div class="pda-auth-footer-note">
+              Não tem acesso? <strong>Solicite o cadastro à CGTI</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORCE PASSWORD CHANGE VIEW -->
+    <div id="force-password-view" class="pda-auth-page" style="display:none;">
+      <div class="pda-auth-stripe">
+        <div class="green"></div>
+        <div class="yellow"></div>
+        <div class="blue"></div>
+      </div>
+      <div class="pda-auth-body">
+        <div class="pda-auth-brand">
+          <svg class="pda-auth-brand-bg" viewBox="0 0 640 900" fill="none" preserveAspectRatio="xMaxYMin slice">
+            <g stroke="#4d7ab5" stroke-width="1.2" opacity="0.45">
+              <line x1="120" y1="140" x2="260" y2="220"></line>
+              <line x1="260" y1="220" x2="200" y2="340"></line>
+              <line x1="260" y1="220" x2="420" y2="200"></line>
+              <line x1="420" y1="200" x2="520" y2="300"></line>
+              <line x1="200" y1="340" x2="340" y2="420"></line>
+              <line x1="340" y1="420" x2="480" y2="400"></line>
+              <line x1="480" y1="400" x2="520" y2="300"></line>
+              <line x1="340" y1="420" x2="300" y2="560"></line>
+              <line x1="300" y1="560" x2="440" y2="620"></line>
+              <line x1="440" y1="620" x2="420" y2="740"></line>
+              <line x1="480" y1="400" x2="560" y2="520"></line>
+              <line x1="560" y1="520" x2="440" y2="620"></line>
+              <line x1="120" y1="140" x2="180" y2="60"></line>
+            </g>
+            <g fill="#dce8fb">
+              <circle cx="120" cy="140" r="4" opacity="0.7"></circle>
+              <circle cx="180" cy="60" r="3" opacity="0.5"></circle>
+              <circle cx="260" cy="220" r="7" opacity="0.85"></circle>
+              <circle cx="200" cy="340" r="4" opacity="0.6"></circle>
+              <circle cx="420" cy="200" r="5" opacity="0.7"></circle>
+              <circle cx="520" cy="300" r="8" opacity="0.9"></circle>
+              <circle cx="340" cy="420" r="6" opacity="0.75"></circle>
+              <circle cx="480" cy="400" r="4" opacity="0.6"></circle>
+              <circle cx="300" cy="560" r="5" opacity="0.65"></circle>
+              <circle cx="440" cy="620" r="7" opacity="0.85"></circle>
+              <circle cx="420" cy="740" r="4" opacity="0.5"></circle>
+              <circle cx="560" cy="520" r="5" opacity="0.7"></circle>
+            </g>
+          </svg>
+
+          <div class="pda-auth-brand-header">
+            <div class="pda-auth-brand-icon"><i class="fa-solid fa-circle-nodes"></i></div>
+            <div>
+              <div class="pda-auth-brand-name">Base de Dados MEsp</div>
+              <div class="pda-auth-brand-subname">MINISTÉRIO DO ESPORTE</div>
+            </div>
+          </div>
+
+          <div class="pda-auth-brand-main">
+            <div class="pda-auth-pill"><i class="fa-solid fa-circle-check"></i> Plano de Dados Abertos</div>
+            <h1 class="pda-auth-headline">Transparência que conecta dados e sociedade</h1>
+            <p class="pda-auth-desc">Preencha e consulte os conjuntos de dados abertos do Ministério do Esporte publicados em dados.gov.br, em um único ambiente integrado.</p>
+            <div class="pda-auth-badges">
+              <span class="pda-auth-badge"><i class="fa-solid fa-chart-column"></i> Dados atualizados</span>
+              <span class="pda-auth-badge"><i class="fa-solid fa-globe"></i> Acesso público</span>
+              <span class="pda-auth-badge"><i class="fa-solid fa-shield-halved"></i> Padrão dados.gov.br</span>
+            </div>
+          </div>
+
+          <div class="pda-auth-brand-footer">Ministério do Esporte • Governo Federal do Brasil</div>
+        </div>
+
+        <div class="pda-auth-form-panel">
+          <div class="pda-auth-form-box">
+            <div class="pda-auth-form-icon"><i class="fa-solid fa-key"></i></div>
+            <h2>Defina sua senha</h2>
+            <p>Você está usando uma senha provisória cadastrada pela CGTI. Por segurança, defina uma nova senha, só sua, para continuar.</p>
+
+            <form id="force-password-form" novalidate>
+              <div class="pda-field">
+                <label for="force-password-new">Nova senha</label>
+                <div class="pda-input-wrap">
+                  <i class="fa-solid fa-lock"></i>
+                  <input type="password" id="force-password-new" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required minlength="6">
+                </div>
+              </div>
+              <div class="pda-field">
+                <label for="force-password-confirm">Confirmar nova senha</label>
+                <div class="pda-input-wrap">
+                  <i class="fa-solid fa-lock"></i>
+                  <input type="password" id="force-password-confirm" placeholder="Repita a nova senha" autocomplete="new-password" required minlength="6">
+                </div>
+              </div>
+
+              <div id="force-password-error" class="pda-error" style="display:none;">
+                <i class="fa-solid fa-circle-exclamation"></i> <span id="force-password-error-text"></span>
+              </div>
+
+              <button type="submit" class="pda-submit-btn" id="btn-force-password-submit">
+                Definir Senha e Continuar <i class="fa-solid fa-check"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- APP SHELL (header + main content), hidden until authenticated -->
+  <div id="app-shell" style="display:none;">
+
   <!-- Top Gov Header -->
   <header class="gov-header">
     <div class="gov-header-container">
@@ -48,76 +263,6 @@
 
   <!-- Main Content Area -->
   <main class="main-container">
-
-    <!-- LOGIN VIEW CONTAINER -->
-    <div id="login-view" class="login-container">
-      <div class="login-box">
-        <h2><i class="fa-solid fa-lock"></i> Acesso ao Sistema PDA</h2>
-        <p class="login-subtitle">Entre com o e-mail e senha cadastrados pela CGTI para preencher ou consultar os dados
-          do Plano de Dados Abertos.</p>
-
-        <form id="login-form" novalidate>
-          <div class="login-field">
-            <label for="login-email">E-mail</label>
-            <input type="email" id="login-email" class="form-input" autocomplete="username" required>
-          </div>
-          <div class="login-field">
-            <label for="login-password">Senha</label>
-            <div style="position: relative;">
-              <input type="password" id="login-password" class="form-input" autocomplete="current-password"
-                style="padding-right: 2.5rem;" required>
-              <button type="button" id="btn-toggle-login-password" class="btn-icon-inline"
-                title="Mostrar/Ocultar senha">
-                <i class="fa-solid fa-eye" id="icon-login-eye"></i>
-              </button>
-            </div>
-          </div>
-
-          <div id="login-error" class="login-error" style="display:none;">
-            <i class="fa-solid fa-circle-exclamation"></i> <span id="login-error-text">E-mail ou senha
-              incorretos.</span>
-          </div>
-
-          <button type="submit" class="btn btn-primary" id="btn-login-submit"
-            style="width:100%; justify-content:center; margin-top: 0.5rem;">
-            <i class="fa-solid fa-right-to-bracket"></i> Entrar
-          </button>
-        </form>
-
-        <p class="login-hint">Não tem acesso? Solicite o cadastro à CGTI.</p>
-      </div>
-    </div>
-
-    <!-- FORCE PASSWORD CHANGE VIEW CONTAINER -->
-    <div id="force-password-view" class="login-container" style="display:none;">
-      <div class="login-box">
-        <h2><i class="fa-solid fa-key"></i> Defina sua senha</h2>
-        <p class="login-subtitle">Você está usando uma senha provisória cadastrada pela CGTI. Por segurança, defina uma
-          nova senha, só sua, para continuar.</p>
-
-        <form id="force-password-form" novalidate>
-          <div class="login-field">
-            <label for="force-password-new">Nova senha</label>
-            <input type="password" id="force-password-new" class="form-input" autocomplete="new-password" required
-              minlength="6">
-          </div>
-          <div class="login-field">
-            <label for="force-password-confirm">Confirmar nova senha</label>
-            <input type="password" id="force-password-confirm" class="form-input" autocomplete="new-password" required
-              minlength="6">
-          </div>
-
-          <div id="force-password-error" class="login-error" style="display:none;">
-            <i class="fa-solid fa-circle-exclamation"></i> <span id="force-password-error-text"></span>
-          </div>
-
-          <button type="submit" class="btn btn-primary" id="btn-force-password-submit"
-            style="width:100%; justify-content:center; margin-top: 0.5rem;">
-            <i class="fa-solid fa-check"></i> Definir Senha e Continuar
-          </button>
-        </form>
-      </div>
-    </div>
 
     <!-- USER FORM VIEW CONTAINER -->
     <div id="user-view" style="display:none;">
@@ -592,18 +737,15 @@
     <div id="admin-view" class="admin-container" style="display: none;">
       <div class="admin-header-bar">
         <div>
-          <h2><i class="fa-solid fa-user-shield"></i> Painel do Administrador</h2>
-          <p>Gerencie e visualize todas as respostas enviadas pelo formulário.</p>
+          <h2><i class="fa-solid fa-chart-line"></i> Painel do Administrador</h2>
+          <p>Gerencie e visualize todas as respostas enviadas pelo formulário PDA.</p>
         </div>
         <div class="admin-top-actions">
-          <button type="button" class="btn btn-primary" id="btn-admin-new-area">
-            <i class="fa-solid fa-user-plus"></i> Cadastrar Área
+          <button type="button" class="btn btn-primary" id="btn-admin-new-area" title="Criar novo login de área">
+            <i class="fa-solid fa-plus"></i> Cadastrar Área
           </button>
-          <button type="button" class="btn btn-outline" id="btn-admin-export-csv">
-            <i class="fa-solid fa-file-csv"></i> Exportar Tudo (CSV)
-          </button>
-          <button type="button" class="btn btn-outline" id="btn-admin-logout" title="Sair do sistema">
-            <i class="fa-solid fa-right-from-bracket"></i> Sair
+          <button type="button" class="btn btn-outline" id="btn-admin-export-csv" title="Baixar dados em CSV">
+            <i class="fa-solid fa-download"></i> Exportar (CSV)
           </button>
         </div>
       </div>
@@ -614,18 +756,18 @@
           <div class="metric-icon blue"><i class="fa-solid fa-inbox"></i></div>
           <div class="metric-body">
             <div class="metric-value" id="metric-total">0</div>
-            <div class="metric-label">Total de Respostas</div>
+            <div class="metric-label">Respostas Totais</div>
           </div>
         </div>
         <div class="metric-card">
-          <div class="metric-icon green"><i class="fa-solid fa-lock-open"></i></div>
+          <div class="metric-icon green"><i class="fa-solid fa-unlock"></i></div>
           <div class="metric-body">
             <div class="metric-value" id="metric-abertos">0</div>
             <div class="metric-label">Dados Abertos</div>
           </div>
         </div>
         <div class="metric-card">
-          <div class="metric-icon yellow"><i class="fa-solid fa-globe"></i></div>
+          <div class="metric-icon yellow"><i class="fa-solid fa-link"></i></div>
           <div class="metric-body">
             <div class="metric-value" id="metric-ods">0</div>
             <div class="metric-label">Com Relação a ODS</div>
@@ -738,6 +880,8 @@
   <footer>
     <p>Portal dados.gov.br • Ministério do Esporte (MESP) • Desenvolvido com Padrão Digital Gov.br</p>
   </footer>
+
+  </div> <!-- End of #app-shell -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>

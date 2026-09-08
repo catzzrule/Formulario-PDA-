@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const progressBar = document.getElementById('progress-bar');
 
   // Views
+  const authScreen = document.getElementById('auth-screen');
+  const appShell = document.getElementById('app-shell');
   const loginView = document.getElementById('login-view');
   const forcePasswordView = document.getElementById('force-password-view');
   const userView = document.getElementById('user-view');
@@ -633,10 +635,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function showLoginView() {
     currentUser = null;
     currentProfile = null;
+    authScreen.style.display = 'block';
+    appShell.style.display = 'none';
     loginView.style.display = 'flex';
     forcePasswordView.style.display = 'none';
-    userView.style.display = 'none';
-    adminView.style.display = 'none';
     headerActions.style.display = 'none';
     btnToggleAdmin.style.display = 'none';
     loginForm.reset();
@@ -644,19 +646,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showForcePasswordView() {
+    authScreen.style.display = 'block';
+    appShell.style.display = 'none';
     loginView.style.display = 'none';
-    userView.style.display = 'none';
-    adminView.style.display = 'none';
-    btnToggleAdmin.style.display = 'none';
-    btnFillDemo.style.display = 'none';
     forcePasswordView.style.display = 'flex';
     forcePasswordForm.reset();
     forcePasswordError.style.display = 'none';
   }
 
   function showUserView() {
-    loginView.style.display = 'none';
-    forcePasswordView.style.display = 'none';
+    authScreen.style.display = 'none';
+    appShell.style.display = 'block';
     adminView.style.display = 'none';
     btnFillDemo.style.display = '';
     userView.style.display = 'block';
@@ -664,8 +664,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function showAdminView() {
-    loginView.style.display = 'none';
-    forcePasswordView.style.display = 'none';
+    authScreen.style.display = 'none';
+    appShell.style.display = 'block';
     userView.style.display = 'none';
     btnFillDemo.style.display = '';
     adminView.style.display = 'block';
@@ -798,6 +798,30 @@ document.addEventListener('DOMContentLoaded', () => {
       loginPasswordInput.type = 'password';
       iconLoginEye.className = 'fa-solid fa-eye';
     }
+  });
+
+  // "Esqueci minha senha" — envia um link de redefinição por e-mail
+  document.getElementById('btn-forgot-password')?.addEventListener('click', async () => {
+    const email = loginEmailInput.value.trim();
+    loginError.style.display = 'none';
+
+    if (!email) {
+      loginErrorText.textContent = 'Digite seu e-mail no campo acima para receber o link de redefinição.';
+      loginError.style.display = 'block';
+      return;
+    }
+
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.href.split('#')[0].split('?')[0]
+    });
+
+    if (error) {
+      loginErrorText.textContent = error.message;
+      loginError.style.display = 'block';
+      return;
+    }
+
+    showToast('Se esse e-mail estiver cadastrado, enviamos um link para redefinir a senha.');
   });
 
   btnLogout?.addEventListener('click', fullLogout);
@@ -1041,9 +1065,23 @@ document.addEventListener('DOMContentLoaded', () => {
       await onLoggedIn(session.user);
     }
 
-    sb.auth.onAuthStateChange((event) => {
+    sb.auth.onAuthStateChange(async (event, recoverySession) => {
       if (event === 'SIGNED_OUT') {
         showLoginView();
+      } else if (event === 'PASSWORD_RECOVERY' && recoverySession) {
+        // Usuário clicou no link de "Esqueci minha senha" — deixa definir uma nova
+        currentUser = recoverySession.user;
+        const { data: profile } = await sb
+          .from('profiles')
+          .select('*')
+          .eq('id', recoverySession.user.id)
+          .single();
+        currentProfile = profile || null;
+        if (currentProfile) {
+          userBadgeText.textContent = `${currentProfile.area || currentProfile.email} • ${currentProfile.role === 'master' ? 'CGTI (Master)' : 'Área'}`;
+          headerActions.style.display = 'flex';
+        }
+        showForcePasswordView();
       }
     });
   })();
