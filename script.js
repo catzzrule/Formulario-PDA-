@@ -284,12 +284,22 @@ document.addEventListener('DOMContentLoaded', () => {
     return data;
   }
 
+  // Escapa texto vindo de usuários antes de injetar em innerHTML (previne XSS armazenado)
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   // Helper Function: Generate Structured Report HTML
   function generateReportHTML(data, subId = '', subTimestamp = '') {
     const getVal = (key, defaultText = 'Não informado') => {
       const val = data[key];
-      if (Array.isArray(val)) return val.length ? val.join(', ') : defaultText;
-      return val && val.toString().trim() ? val : defaultText;
+      const raw = Array.isArray(val) ? (val.length ? val.join(', ') : defaultText) : (val && val.toString().trim() ? val : defaultText);
+      return escapeHtml(raw);
     };
 
     const emitDate = subTimestamp || new Date().toLocaleDateString('pt-BR');
@@ -871,14 +881,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tbody.innerHTML = filtered.map(item => `
       <tr>
-        <td><strong>${item.area || 'Área não identificada'}</strong></td>
-        <td style="font-size: 0.85rem; color: var(--text-muted);">${item.timestamp}</td>
-        <td style="font-weight: 600;">${item.data.q2_titulo_base || 'Sem Título'}</td>
-        <td>${item.data.q4_area_tecnica || 'Não informada'}</td>
-        <td>${item.data.q6_periodicidade || 'N/A'}</td>
+        <td><strong>${escapeHtml(item.area || 'Área não identificada')}</strong></td>
+        <td style="font-size: 0.85rem; color: var(--text-muted);">${escapeHtml(item.timestamp)}</td>
+        <td style="font-weight: 600;">${escapeHtml(item.data.q2_titulo_base || 'Sem Título')}</td>
+        <td>${escapeHtml(item.data.q4_area_tecnica || 'Não informada')}</td>
+        <td>${escapeHtml(item.data.q6_periodicidade || 'N/A')}</td>
         <td>
           <span class="${item.data.q1_dados_abertos === 'Aberto' ? 'badge-aberto' : 'badge-nao-aberto'}">
-            ${item.data.q1_dados_abertos || 'N/A'}
+            ${escapeHtml(item.data.q1_dados_abertos || 'N/A')}
           </span>
         </td>
         <td style="text-align: center;">
