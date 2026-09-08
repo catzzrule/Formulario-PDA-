@@ -125,6 +125,92 @@ body {
   width: 100%;
 }
 
+/* User badge in header */
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+}
+
+/* Login View */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 2rem 0;
+}
+
+.login-box {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 2.5rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+
+.login-box h2 {
+  font-size: 1.3rem;
+  color: var(--primary-blue);
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.login-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 1.75rem;
+}
+
+.login-field {
+  text-align: left;
+  margin-bottom: 1.1rem;
+}
+
+.login-field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.btn-icon-inline {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.login-error {
+  color: var(--error-color);
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+  text-align: left;
+}
+
+.login-hint {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 1.5rem;
+}
+
 /* Informative Banner Card */
 .info-banner {
   background: #ffffff;
@@ -1053,6 +1139,7 @@ footer {
   .btn,
   .modal-backdrop,
   .toast-alert,
+  .login-container,
   .form-section:not(#section-step-3),
   footer {
     display: none !important;

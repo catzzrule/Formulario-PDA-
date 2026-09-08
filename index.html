@@ -24,12 +24,18 @@
           <p>Ministério do Esporte (MESP) • Plano de Dados Abertos (PDA)</p>
         </div>
       </div>
-      <div class="header-actions">
+      <div class="header-actions" id="header-actions-authenticated" style="display:none;">
+        <span class="user-badge" id="user-badge">
+          <i class="fa-solid fa-circle-user"></i> <span id="user-badge-text"></span>
+        </span>
         <button type="button" class="btn-ghost-light" id="btn-fill-demo" title="Preencher com dados de exemplo">
           <i class="fa-solid fa-wand-magic-sparkles"></i> Preenchimento Demo
         </button>
-        <button type="button" class="btn-ghost-light" id="btn-toggle-admin" title="Ver respostas no Painel Admin">
+        <button type="button" class="btn-ghost-light" id="btn-toggle-admin" title="Ver respostas no Painel Admin" style="display:none;">
           <i class="fa-solid fa-user-shield"></i> Painel Admin <span class="admin-count-badge" id="admin-badge-count">0</span>
+        </button>
+        <button type="button" class="btn-ghost-light" id="btn-logout" title="Sair do sistema">
+          <i class="fa-solid fa-right-from-bracket"></i> Sair
         </button>
       </div>
     </div>
@@ -38,8 +44,42 @@
   <!-- Main Content Area -->
   <main class="main-container">
 
+    <!-- LOGIN VIEW CONTAINER -->
+    <div id="login-view" class="login-container">
+      <div class="login-box">
+        <h2><i class="fa-solid fa-lock"></i> Acesso ao Sistema PDA</h2>
+        <p class="login-subtitle">Entre com o e-mail e senha cadastrados pela CGTI para preencher ou consultar os dados do Plano de Dados Abertos.</p>
+
+        <form id="login-form" novalidate>
+          <div class="login-field">
+            <label for="login-email">E-mail</label>
+            <input type="email" id="login-email" class="form-input" autocomplete="username" required>
+          </div>
+          <div class="login-field">
+            <label for="login-password">Senha</label>
+            <div style="position: relative;">
+              <input type="password" id="login-password" class="form-input" autocomplete="current-password" style="padding-right: 2.5rem;" required>
+              <button type="button" id="btn-toggle-login-password" class="btn-icon-inline" title="Mostrar/Ocultar senha">
+                <i class="fa-solid fa-eye" id="icon-login-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div id="login-error" class="login-error" style="display:none;">
+            <i class="fa-solid fa-circle-exclamation"></i> <span id="login-error-text">E-mail ou senha incorretos.</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-login-submit" style="width:100%; justify-content:center; margin-top: 0.5rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Entrar
+          </button>
+        </form>
+
+        <p class="login-hint">Não tem acesso? Solicite o cadastro à CGTI.</p>
+      </div>
+    </div>
+
     <!-- USER FORM VIEW CONTAINER -->
-    <div id="user-view">
+    <div id="user-view" style="display:none;">
       <!-- Wizard Step Indicator Bar -->
       <nav aria-label="Progresso do formulário" class="wizard-progress">
       <div class="wizard-progress-bar" id="progress-bar"></div>
@@ -475,11 +515,14 @@
           <p>Gerencie e visualize todas as respostas enviadas pelo formulário.</p>
         </div>
         <div class="admin-top-actions">
+          <button type="button" class="btn btn-primary" id="btn-admin-new-area">
+            <i class="fa-solid fa-user-plus"></i> Cadastrar Área
+          </button>
           <button type="button" class="btn btn-outline" id="btn-admin-export-csv">
             <i class="fa-solid fa-file-csv"></i> Exportar Tudo (CSV)
           </button>
-          <button type="button" class="btn btn-outline" id="btn-admin-logout" title="Sair do Painel Admin">
-            <i class="fa-solid fa-lock"></i> Sair / Bloquear
+          <button type="button" class="btn btn-outline" id="btn-admin-logout" title="Sair do sistema">
+            <i class="fa-solid fa-right-from-bracket"></i> Sair
           </button>
         </div>
       </div>
@@ -520,7 +563,7 @@
         <table class="admin-table">
           <thead>
             <tr>
-              <th># ID</th>
+              <th>Área</th>
               <th>Data / Hora</th>
               <th>Título da Base de Dados</th>
               <th>Área Técnica</th>
@@ -567,34 +610,37 @@
     </div>
   </div>
 
-  <!-- Modal Admin Passcode Authentication -->
-  <div class="modal-backdrop" id="admin-auth-modal">
-    <div class="modal-box">
-      <div class="modal-icon" style="background: #e0f2fe; color: var(--primary-blue);">
-        <i class="fa-solid fa-lock"></i>
-      </div>
-      <h3 class="modal-title">Acesso Restrito ao Admin</h3>
-      <p class="modal-desc">Informe a palavra-chave (token) para acessar o painel de respostas do formulário.</p>
-      
-      <div style="position: relative; margin-bottom: 1.25rem; text-align: left;">
-        <label for="admin-token-input" style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Palavra-chave / Token de Acesso:</label>
-        <div style="position: relative;">
-          <input type="password" id="admin-token-input" class="form-input" placeholder="Digite a palavra-chave (padrão: admin123)..." style="padding-right: 2.5rem;">
-          <button type="button" id="btn-toggle-token-visibility" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;" title="Mostrar/Ocultar palavra-chave">
-            <i class="fa-solid fa-eye" id="icon-token-eye"></i>
+  <!-- Modal Cadastrar Nova Área -->
+  <div class="modal-backdrop" id="new-area-modal">
+    <div class="modal-box" style="text-align: left;">
+      <h3 class="modal-title" style="text-align:center;"><i class="fa-solid fa-user-plus"></i> Cadastrar Nova Área</h3>
+      <p class="modal-desc" style="text-align:center;">Crie o login (e-mail e senha) que a área vai usar para preencher o formulário.</p>
+
+      <form id="new-area-form" novalidate>
+        <div class="login-field">
+          <label for="new-area-name">Nome da Área</label>
+          <input type="text" id="new-area-name" class="form-input" placeholder="Ex: Secretaria Nacional de Esporte de Alto Rendimento (SNEAR)" required>
+        </div>
+        <div class="login-field">
+          <label for="new-area-email">E-mail de acesso</label>
+          <input type="email" id="new-area-email" class="form-input" autocomplete="off" required>
+        </div>
+        <div class="login-field">
+          <label for="new-area-password">Senha provisória</label>
+          <input type="text" id="new-area-password" class="form-input" placeholder="Mínimo 6 caracteres" autocomplete="off" required>
+        </div>
+
+        <div id="new-area-error" class="login-error" style="display:none;">
+          <i class="fa-solid fa-circle-exclamation"></i> <span id="new-area-error-text"></span>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" id="btn-new-area-cancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-new-area-submit">
+            <i class="fa-solid fa-check"></i> Cadastrar
           </button>
         </div>
-        <div id="admin-auth-error" style="color: var(--error-color); font-size: 0.85rem; margin-top: 0.4rem; display: none;">
-          <i class="fa-solid fa-circle-exclamation"></i> Palavra-chave incorreta. Tente novamente.
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-        <button type="button" class="btn btn-secondary" id="btn-admin-auth-cancel">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btn-admin-auth-submit">
-          <i class="fa-solid fa-key"></i> Acessar Painel
-        </button>
-      </div>
+      </form>
     </div>
   </div>
 
@@ -608,6 +654,8 @@
     <p>Portal dados.gov.br • Ministério do Esporte (MESP) • Desenvolvido com Padrão Digital Gov.br</p>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="supabase-config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

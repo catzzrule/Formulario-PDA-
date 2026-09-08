@@ -1,10 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const STORAGE_BUCKET = 'pda-arquivos';
+
   const form = document.getElementById('dataset-form');
   const progressBar = document.getElementById('progress-bar');
-  
+
   // Views
+  const loginView = document.getElementById('login-view');
   const userView = document.getElementById('user-view');
   const adminView = document.getElementById('admin-view');
+  const headerActions = document.getElementById('header-actions-authenticated');
 
   // Steps & Indicators
   const steps = [
@@ -19,6 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   let currentStep = 1;
+  let currentUser = null;
+  let currentProfile = null;
+  let cachedSubmissions = [];
 
   // Buttons
   const btnStep1Next = document.getElementById('btn-step1-next');
@@ -29,38 +37,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnClearDraft = document.getElementById('btn-clear-draft');
   const btnPrint = document.getElementById('btn-print');
   const btnToggleAdmin = document.getElementById('btn-toggle-admin');
-  const btnBackToForm = document.getElementById('btn-back-to-form');
-  
+  const btnSubmit = document.getElementById('btn-submit');
+
   // Conditional elements
   const q8Radios = document.getElementsByName('q8_relacao_ods');
   const cardQ9 = document.getElementById('card-q9-ods');
-  
+
   // Modals & Toasts
   const successModal = document.getElementById('success-modal');
   const btnModalClose = document.getElementById('btn-modal-close');
   const toast = document.getElementById('toast');
   const toastMessage = document.getElementById('toast-message');
 
-  // Submissions Data Storage (localStorage)
-  function getSubmissions() {
-    const saved = localStorage.getItem('dados_gov_br_submissions');
-    return saved ? JSON.parse(saved) : [];
-  }
+  // --- LOGIN FORM ELEMENTS ---
+  const loginForm = document.getElementById('login-form');
+  const loginEmailInput = document.getElementById('login-email');
+  const loginPasswordInput = document.getElementById('login-password');
+  const loginError = document.getElementById('login-error');
+  const loginErrorText = document.getElementById('login-error-text');
+  const btnLoginSubmit = document.getElementById('btn-login-submit');
+  const btnToggleLoginPassword = document.getElementById('btn-toggle-login-password');
+  const iconLoginEye = document.getElementById('icon-login-eye');
+  const userBadgeText = document.getElementById('user-badge-text');
+  const btnLogout = document.getElementById('btn-logout');
+  const btnAdminLogout = document.getElementById('btn-admin-logout');
 
-  function saveSubmission(formDataObj) {
-    const list = getSubmissions();
-    const now = new Date();
-    const id = `SUB-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${(list.length + 1).toString().padStart(3, '0')}`;
-    
-    const submission = {
-      id: id,
-      timestamp: now.toLocaleString('pt-BR'),
-      data: formDataObj
-    };
-    list.unshift(submission);
-    localStorage.setItem('dados_gov_br_submissions', JSON.stringify(list));
-    updateAdminUI();
-    return submission;
+  // Draft key is namespaced per-user so a shared computer doesn't mix drafts
+  function draftKey() {
+    return currentUser ? `dados_gov_br_draft_${currentUser.id}` : null;
   }
 
   // File Upload Elements Setup
@@ -122,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     currentStep = stepNumber;
 
-    // Update section visibility
     steps.forEach((sec, idx) => {
       if (idx + 1 === currentStep) {
         sec.classList.add('active');
@@ -131,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Update Indicators
     indicators.forEach((ind, idx) => {
       const stepIdx = idx + 1;
       ind.classList.remove('active', 'completed');
@@ -142,11 +144,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Progress bar percentage
     const progressPercent = ((currentStep - 1) / 2) * 80;
     progressBar.style.width = `${progressPercent}%`;
 
-    // Render summary if step 3
     if (currentStep === 3) {
       renderSummary();
     }
@@ -192,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       input.addEventListener('change', updateClass);
-      // initial check
       if (input.checked) label.classList.add('selected');
       else label.classList.remove('selected');
     });
@@ -249,7 +248,6 @@ document.addEventListener('DOMContentLoaded', () => {
     goToStep(2);
   });
 
-  // Step Indicators Click
   indicators.forEach(ind => {
     ind.addEventListener('click', () => {
       const targetStep = parseInt(ind.getAttribute('data-step'), 10);
@@ -422,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Pre-fill Demo Data
-  btnFillDemo.addEventListener('click', () => {
+  btnFillDemo?.addEventListener('click', () => {
     document.querySelector('input[name="q1_dados_abertos"][value="Aberto"]').checked = true;
     document.getElementById('q2_titulo_base').value = 'Folha de Pagamento aos Atletas do Bolsa Atleta';
     document.getElementById('q3_descricao').value = 'Dados da Folha de Pagamento aos atletas/beneficiários do Programa Bolsa Atleta, em todas as categorias de Bolsa no âmbito nacional.';
@@ -448,7 +446,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('input[name="q18_atualizacao_versao"][value="Não"]').checked = true;
     document.querySelector('input[name="q19_descontinuado"][value="Não"]').checked = true;
 
-    // Step 2 Demo Data
     document.getElementById('q20_titulo_recurso').value = 'Tabela Consolidada de Pagamentos Bolsa Atleta 2024 - 2026';
     document.getElementById('q21_descricao_recurso').value = 'Arquivo CSV contendo dados de pagamento com número de edital, nome do atleta, categoria da bolsa e valor pago.';
     document.getElementById('q23_titulo_dicionario').value = 'Dicionário de Dados - Bolsa Atleta';
@@ -459,14 +456,18 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Dados de exemplo preenchidos com sucesso!');
   });
 
-  // LocalStorage Draft Autosave
+  // LocalStorage Draft Autosave (rascunho local, por usuário, antes do envio)
   function saveDraft() {
+    const key = draftKey();
+    if (!key) return;
     const data = getFormData();
-    localStorage.setItem('dados_gov_br_draft', JSON.stringify(data));
+    localStorage.setItem(key, JSON.stringify(data));
   }
 
   function loadDraft() {
-    const saved = localStorage.getItem('dados_gov_br_draft');
+    const key = draftKey();
+    if (!key) return;
+    const saved = localStorage.getItem(key);
     if (!saved) return;
 
     try {
@@ -500,7 +501,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   btnClearDraft?.addEventListener('click', () => {
-    localStorage.removeItem('dados_gov_br_draft');
+    const key = draftKey();
+    if (key) localStorage.removeItem(key);
     form.reset();
     updateOdsVisibility();
     setupOptionItemHighlighting();
@@ -512,23 +514,73 @@ document.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('input', saveDraft);
   form.addEventListener('change', saveDraft);
 
+  // Upload a file to Supabase Storage under the logged-in user's own folder
+  async function uploadFileIfPresent(inputId, submissionId) {
+    const input = document.getElementById(inputId);
+    if (!input.files || !input.files[0]) return null;
+    const file = input.files[0];
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${currentUser.id}/${submissionId}/${inputId}-${safeName}`;
+
+    const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, file, { upsert: true });
+    if (error) {
+      throw new Error(`Falha ao enviar o arquivo "${file.name}": ${error.message}`);
+    }
+    return { path, name: file.name };
+  }
+
   // Form Submit Handler
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!validateStep1()) {
       goToStep(1);
       return;
     }
 
-    const data = getFormData();
-    saveSubmission(data);
-    localStorage.removeItem('dados_gov_br_draft');
-    form.reset();
-    updateOdsVisibility();
-    setupOptionItemHighlighting();
-    goToStep(1);
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
 
-    successModal.classList.add('show');
+    try {
+      const submissionId = crypto.randomUUID();
+      const data = getFormData();
+
+      const file22 = await uploadFileIfPresent('q22_arquivo_recurso', submissionId);
+      if (file22) {
+        data.q22_arquivo_recurso = file22.name;
+        data.q22_arquivo_recurso_path = file22.path;
+      }
+
+      const file25 = await uploadFileIfPresent('q25_arquivo_dicionario', submissionId);
+      if (file25) {
+        data.q25_arquivo_dicionario = file25.name;
+        data.q25_arquivo_dicionario_path = file25.path;
+      }
+
+      const { error } = await sb.from('submissions').insert({
+        id: submissionId,
+        user_id: currentUser.id,
+        area: currentProfile.area,
+        data
+      });
+      if (error) throw error;
+
+      const key = draftKey();
+      if (key) localStorage.removeItem(key);
+      form.reset();
+      updateOdsVisibility();
+      setupOptionItemHighlighting();
+      document.getElementById('preview-q22').innerHTML = '';
+      document.getElementById('preview-q25').innerHTML = '';
+      goToStep(1);
+
+      successModal.classList.add('show');
+    } catch (err) {
+      console.error(err);
+      showToast(`Erro ao enviar formulário: ${err.message || err}`, 'error');
+    } finally {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar Formulário';
+    }
   });
 
   btnModalClose.addEventListener('click', () => {
@@ -555,105 +607,149 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3500);
   }
 
-  // --- ADMIN TOKEN AUTHENTICATION ---
-  // Valid keyword tokens (case-insensitive)
-  const VALID_ADMIN_TOKENS = ['admin123', 'mesp2026', 'admin'];
+  // ==========================================================================
+  // AUTENTICAÇÃO (Supabase Auth) — login e senha reais, dois perfis
+  // ==========================================================================
 
-  const adminAuthModal = document.getElementById('admin-auth-modal');
-  const adminTokenInput = document.getElementById('admin-token-input');
-  const adminAuthError = document.getElementById('admin-auth-error');
-  const btnAdminAuthSubmit = document.getElementById('btn-admin-auth-submit');
-  const btnAdminAuthCancel = document.getElementById('btn-admin-auth-cancel');
-  const btnToggleTokenVisibility = document.getElementById('btn-toggle-token-visibility');
-  const iconTokenEye = document.getElementById('icon-token-eye');
-  const btnAdminLogout = document.getElementById('btn-admin-logout');
-
-  function isAuthenticated() {
-    return sessionStorage.getItem('admin_authenticated') === 'true';
-  }
-
-  function promptAdminAuth() {
-    if (isAuthenticated()) {
-      showAdminView();
-      return;
-    }
-
-    adminTokenInput.value = '';
-    adminAuthError.style.display = 'none';
-    adminTokenInput.style.borderColor = 'var(--border-color)';
-    adminAuthModal.classList.add('show');
-    setTimeout(() => adminTokenInput.focus(), 150);
-  }
-
-  function attemptAdminAuth() {
-    const inputToken = adminTokenInput.value.trim().toLowerCase();
-    if (VALID_ADMIN_TOKENS.includes(inputToken)) {
-      sessionStorage.setItem('admin_authenticated', 'true');
-      adminAuthModal.classList.remove('show');
-      showAdminView();
-      showToast('Autenticado com sucesso no Painel Admin!');
-    } else {
-      adminAuthError.style.display = 'block';
-      adminTokenInput.style.borderColor = 'var(--error-color)';
-      adminTokenInput.focus();
-    }
-  }
-
-  btnToggleAdmin.addEventListener('click', () => {
-    if (adminView.style.display === 'none') {
-      promptAdminAuth();
-    } else {
-      showUserView();
-    }
-  });
-
-  btnAdminAuthSubmit?.addEventListener('click', attemptAdminAuth);
-  
-  adminTokenInput?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      attemptAdminAuth();
-    }
-  });
-
-  btnAdminAuthCancel?.addEventListener('click', () => {
-    adminAuthModal.classList.remove('show');
-  });
-
-  btnToggleTokenVisibility?.addEventListener('click', () => {
-    if (adminTokenInput.type === 'password') {
-      adminTokenInput.type = 'text';
-      if (iconTokenEye) iconTokenEye.className = 'fa-solid fa-eye-slash';
-    } else {
-      adminTokenInput.type = 'password';
-      if (iconTokenEye) iconTokenEye.className = 'fa-solid fa-eye';
-    }
-  });
-
-  btnAdminLogout?.addEventListener('click', () => {
-    sessionStorage.removeItem('admin_authenticated');
-    showUserView();
-    showToast('Sessão do Admin encerrada.');
-  });
-
-  // --- ADMIN PANEL CONTROLLER ---
-  function showAdminView() {
+  function showLoginView() {
+    currentUser = null;
+    currentProfile = null;
+    loginView.style.display = 'flex';
     userView.style.display = 'none';
-    adminView.style.display = 'block';
-    updateAdminUI();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    adminView.style.display = 'none';
+    headerActions.style.display = 'none';
+    btnToggleAdmin.style.display = 'none';
+    loginForm.reset();
+    loginError.style.display = 'none';
   }
 
   function showUserView() {
+    loginView.style.display = 'none';
     adminView.style.display = 'none';
     userView.style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  btnBackToForm?.addEventListener('click', showUserView);
+  async function showAdminView() {
+    loginView.style.display = 'none';
+    userView.style.display = 'none';
+    adminView.style.display = 'block';
+    await updateAdminUI();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-  function updateAdminUI() {
-    const list = getSubmissions();
+  async function onLoggedIn(user) {
+    currentUser = user;
+
+    const { data: profile, error } = await sb
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (error || !profile) {
+      showToast('Não foi possível carregar seu perfil. Contate a CGTI.', 'error');
+      await sb.auth.signOut();
+      showLoginView();
+      return;
+    }
+
+    currentProfile = profile;
+
+    userBadgeText.textContent = `${profile.area || profile.email} • ${profile.role === 'master' ? 'CGTI (Master)' : 'Área'}`;
+    headerActions.style.display = 'flex';
+
+    if (profile.role === 'master') {
+      btnToggleAdmin.style.display = 'inline-flex';
+      await showAdminView();
+    } else {
+      btnToggleAdmin.style.display = 'none';
+      showUserView();
+      loadDraft();
+      goToStep(1);
+    }
+  }
+
+  async function fullLogout() {
+    await sb.auth.signOut();
+    showLoginView();
+    showToast('Sessão encerrada.');
+  }
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginError.style.display = 'none';
+    btnLoginSubmit.disabled = true;
+    btnLoginSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Entrando...';
+
+    const email = loginEmailInput.value.trim();
+    const password = loginPasswordInput.value;
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+    btnLoginSubmit.disabled = false;
+    btnLoginSubmit.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
+
+    if (error) {
+      loginErrorText.textContent = 'E-mail ou senha incorretos.';
+      loginError.style.display = 'block';
+      return;
+    }
+
+    await onLoggedIn(data.user);
+  });
+
+  btnToggleLoginPassword?.addEventListener('click', () => {
+    if (loginPasswordInput.type === 'password') {
+      loginPasswordInput.type = 'text';
+      iconLoginEye.className = 'fa-solid fa-eye-slash';
+    } else {
+      loginPasswordInput.type = 'password';
+      iconLoginEye.className = 'fa-solid fa-eye';
+    }
+  });
+
+  btnLogout?.addEventListener('click', fullLogout);
+  btnAdminLogout?.addEventListener('click', fullLogout);
+
+  btnToggleAdmin.addEventListener('click', async () => {
+    if (adminView.style.display === 'none') {
+      await showAdminView();
+    } else {
+      showUserView();
+    }
+  });
+
+  // ==========================================================================
+  // PAINEL ADMIN (perfil master / CGTI) — lê as respostas do Supabase
+  // ==========================================================================
+
+  async function fetchSubmissions() {
+    const { data, error } = await sb
+      .from('submissions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      showToast(`Erro ao carregar respostas: ${error.message}`, 'error');
+      return [];
+    }
+
+    return data.map(row => ({
+      id: row.id,
+      timestamp: new Date(row.created_at).toLocaleString('pt-BR'),
+      area: row.area,
+      data: row.data
+    }));
+  }
+
+  async function updateAdminUI() {
+    cachedSubmissions = await fetchSubmissions();
+    renderAdminTable();
+  }
+
+  function renderAdminTable() {
+    const list = cachedSubmissions;
     const adminBadgeCount = document.getElementById('admin-badge-count');
     const metricTotal = document.getElementById('metric-total');
     const metricAbertos = document.getElementById('metric-abertos');
@@ -677,7 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const filtered = list.filter(item => {
       if (!searchVal) return true;
-      const text = `${item.id} ${item.data.q2_titulo_base || ''} ${item.data.q4_area_tecnica || ''} ${item.data.q5_email_area || ''} ${item.data.q12_palavras_chave || ''}`.toLowerCase();
+      const text = `${item.id} ${item.area || ''} ${item.data.q2_titulo_base || ''} ${item.data.q4_area_tecnica || ''} ${item.data.q5_email_area || ''} ${item.data.q12_palavras_chave || ''}`.toLowerCase();
       return text.includes(searchVal);
     });
 
@@ -685,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tbody.innerHTML = `
         <tr>
           <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
-            ${list.length === 0 ? 'Nenhuma resposta enviada ainda. Envie o formulário ou clique em "Inserir Resposta Exemplo"!' : 'Nenhuma resposta encontrada para este termo de busca.'}
+            ${list.length === 0 ? 'Nenhuma resposta enviada ainda pelas áreas.' : 'Nenhuma resposta encontrada para este termo de busca.'}
           </td>
         </tr>
       `;
@@ -694,7 +790,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tbody.innerHTML = filtered.map(item => `
       <tr>
-        <td><strong>${item.id}</strong></td>
+        <td><strong>${item.area || 'Área não identificada'}</strong></td>
         <td style="font-size: 0.85rem; color: var(--text-muted);">${item.timestamp}</td>
         <td style="font-weight: 600;">${item.data.q2_titulo_base || 'Sem Título'}</td>
         <td>${item.data.q4_area_tecnica || 'Não informada'}</td>
@@ -716,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `).join('');
   }
 
-  document.getElementById('admin-search-input')?.addEventListener('input', updateAdminUI);
+  document.getElementById('admin-search-input')?.addEventListener('input', renderAdminTable);
 
   // Admin Modal & Detail Actions
   let activeDetailSubmission = null;
@@ -727,8 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnAdminModalPrint = document.getElementById('btn-admin-modal-print');
 
   window.viewSubmissionDetail = function(id) {
-    const list = getSubmissions();
-    const item = list.find(s => s.id === id);
+    const item = cachedSubmissions.find(s => s.id === id);
     if (!item) return;
 
     activeDetailSubmission = item;
@@ -736,13 +831,15 @@ document.addEventListener('DOMContentLoaded', () => {
     adminDetailModal.classList.add('show');
   };
 
-  window.deleteSubmission = function(id) {
-    if (!confirm(`Tem certeza que deseja excluir a resposta ${id}?`)) return;
-    let list = getSubmissions();
-    list = list.filter(s => s.id !== id);
-    localStorage.setItem('dados_gov_br_submissions', JSON.stringify(list));
-    updateAdminUI();
-    showToast(`Resposta ${id} excluída com sucesso.`);
+  window.deleteSubmission = async function(id) {
+    if (!confirm('Tem certeza que deseja excluir esta resposta?')) return;
+    const { error } = await sb.from('submissions').delete().eq('id', id);
+    if (error) {
+      showToast(`Erro ao excluir: ${error.message}`, 'error');
+      return;
+    }
+    await updateAdminUI();
+    showToast('Resposta excluída com sucesso.');
   };
 
   btnAdminModalClose?.addEventListener('click', () => adminDetailModal.classList.remove('show'));
@@ -754,33 +851,84 @@ document.addEventListener('DOMContentLoaded', () => {
     window.print();
   });
 
+  // ==========================================================================
+  // Cadastro de novas áreas pelo Painel Admin (via Edge Function segura)
+  // ==========================================================================
+  const newAreaModal = document.getElementById('new-area-modal');
+  const newAreaForm = document.getElementById('new-area-form');
+  const newAreaNameInput = document.getElementById('new-area-name');
+  const newAreaEmailInput = document.getElementById('new-area-email');
+  const newAreaPasswordInput = document.getElementById('new-area-password');
+  const newAreaError = document.getElementById('new-area-error');
+  const newAreaErrorText = document.getElementById('new-area-error-text');
+  const btnNewAreaSubmit = document.getElementById('btn-new-area-submit');
+  const btnNewAreaCancel = document.getElementById('btn-new-area-cancel');
+
+  document.getElementById('btn-admin-new-area')?.addEventListener('click', () => {
+    newAreaForm.reset();
+    newAreaError.style.display = 'none';
+    newAreaModal.classList.add('show');
+    setTimeout(() => newAreaNameInput.focus(), 150);
+  });
+
+  btnNewAreaCancel?.addEventListener('click', () => {
+    newAreaModal.classList.remove('show');
+  });
+
+  newAreaForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    newAreaError.style.display = 'none';
+    btnNewAreaSubmit.disabled = true;
+    btnNewAreaSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cadastrando...';
+
+    const area = newAreaNameInput.value.trim();
+    const email = newAreaEmailInput.value.trim();
+    const password = newAreaPasswordInput.value;
+
+    try {
+      const { data, error } = await sb.functions.invoke('create-area-user', {
+        body: { email, password, area }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      newAreaModal.classList.remove('show');
+      showToast(`Área "${area}" cadastrada com sucesso!`);
+    } catch (err) {
+      newAreaErrorText.textContent = err.message || 'Erro ao cadastrar a área.';
+      newAreaError.style.display = 'block';
+    } finally {
+      btnNewAreaSubmit.disabled = false;
+      btnNewAreaSubmit.innerHTML = '<i class="fa-solid fa-check"></i> Cadastrar';
+    }
+  });
+
   // Admin Top Bar Buttons
   document.getElementById('btn-admin-export-csv')?.addEventListener('click', () => {
-    const list = getSubmissions();
+    const list = cachedSubmissions;
     if (!list.length) {
       showToast('Nenhuma resposta registrada para exportar.', 'error');
       return;
     }
 
-    const headers = ['# ID', 'Data / Hora', 'Título da Base de Dados', 'Área Técnica', 'Periodicidade', 'Abertura', 'Ações'];
-
+    const headers = ['Área', 'Data / Hora', 'Título da Base de Dados', 'Área Técnica', 'Periodicidade', 'Abertura'];
     const csvRows = [headers.join(';')];
 
     list.forEach(item => {
       const d = item.data;
       const row = [
-        item.id,
+        `"${(item.area || '').replace(/"/g, '""')}"`,
         item.timestamp,
         `"${(d.q2_titulo_base || '').replace(/"/g, '""')}"`,
         `"${(d.q4_area_tecnica || '').replace(/"/g, '""')}"`,
         `"${(d.q6_periodicidade || '').replace(/"/g, '""')}"`,
-        `"${(d.q1_dados_abertos || '').replace(/"/g, '""')}"`,
-        '"Enviado"'
+        `"${(d.q1_dados_abertos || '').replace(/"/g, '""')}"`
       ];
       csvRows.push(row.join(';'));
     });
 
-    const csvContent = '\uFEFF' + csvRows.join('\n');
+    const csvContent = '﻿' + csvRows.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -791,8 +939,21 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Relatório CSV exportado com sucesso!');
   });
 
-  // Initial setup
-  loadDraft();
-  updateAdminUI();
-  goToStep(1);
+  // ==========================================================================
+  // Inicialização: verifica se já existe uma sessão válida
+  // ==========================================================================
+  (async function initAuth() {
+    showLoginView();
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      await onLoggedIn(session.user);
+    }
+
+    sb.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        showLoginView();
+      }
+    });
+  })();
 });
