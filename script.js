@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Views
   const loginView = document.getElementById('login-view');
+  const forcePasswordView = document.getElementById('force-password-view');
   const userView = document.getElementById('user-view');
   const adminView = document.getElementById('admin-view');
   const headerActions = document.getElementById('header-actions-authenticated');
@@ -61,6 +62,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const userBadgeText = document.getElementById('user-badge-text');
   const btnLogout = document.getElementById('btn-logout');
   const btnAdminLogout = document.getElementById('btn-admin-logout');
+
+  // --- FORCE PASSWORD CHANGE FORM ELEMENTS ---
+  const forcePasswordForm = document.getElementById('force-password-form');
+  const forcePasswordNewInput = document.getElementById('force-password-new');
+  const forcePasswordConfirmInput = document.getElementById('force-password-confirm');
+  const forcePasswordError = document.getElementById('force-password-error');
+  const forcePasswordErrorText = document.getElementById('force-password-error-text');
+  const btnForcePasswordSubmit = document.getElementById('btn-force-password-submit');
 
   // Draft key is namespaced per-user so a shared computer doesn't mix drafts
   function draftKey() {
@@ -615,6 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentUser = null;
     currentProfile = null;
     loginView.style.display = 'flex';
+    forcePasswordView.style.display = 'none';
     userView.style.display = 'none';
     adminView.style.display = 'none';
     headerActions.style.display = 'none';
@@ -623,16 +633,31 @@ document.addEventListener('DOMContentLoaded', () => {
     loginError.style.display = 'none';
   }
 
+  function showForcePasswordView() {
+    loginView.style.display = 'none';
+    userView.style.display = 'none';
+    adminView.style.display = 'none';
+    btnToggleAdmin.style.display = 'none';
+    btnFillDemo.style.display = 'none';
+    forcePasswordView.style.display = 'flex';
+    forcePasswordForm.reset();
+    forcePasswordError.style.display = 'none';
+  }
+
   function showUserView() {
     loginView.style.display = 'none';
+    forcePasswordView.style.display = 'none';
     adminView.style.display = 'none';
+    btnFillDemo.style.display = '';
     userView.style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function showAdminView() {
     loginView.style.display = 'none';
+    forcePasswordView.style.display = 'none';
     userView.style.display = 'none';
+    btnFillDemo.style.display = '';
     adminView.style.display = 'block';
     await updateAdminUI();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -658,6 +683,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     userBadgeText.textContent = `${profile.area || profile.email} • ${profile.role === 'master' ? 'CGTI (Master)' : 'Área'}`;
     headerActions.style.display = 'flex';
+
+    if (profile.must_change_password) {
+      showForcePasswordView();
+      return;
+    }
 
     if (profile.role === 'master') {
       btnToggleAdmin.style.display = 'inline-flex';
@@ -697,6 +727,57 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     await onLoggedIn(data.user);
+  });
+
+  forcePasswordForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    forcePasswordError.style.display = 'none';
+
+    const newPassword = forcePasswordNewInput.value;
+    const confirmPassword = forcePasswordConfirmInput.value;
+
+    if (newPassword.length < 6) {
+      forcePasswordErrorText.textContent = 'A senha precisa ter pelo menos 6 caracteres.';
+      forcePasswordError.style.display = 'block';
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      forcePasswordErrorText.textContent = 'As senhas não coincidem.';
+      forcePasswordError.style.display = 'block';
+      return;
+    }
+
+    btnForcePasswordSubmit.disabled = true;
+    btnForcePasswordSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+
+    try {
+      const { error: updateAuthError } = await sb.auth.updateUser({ password: newPassword });
+      if (updateAuthError) throw updateAuthError;
+
+      const { error: updateProfileError } = await sb
+        .from('profiles')
+        .update({ must_change_password: false })
+        .eq('id', currentUser.id);
+      if (updateProfileError) throw updateProfileError;
+
+      currentProfile.must_change_password = false;
+      showToast('Senha definida com sucesso!');
+
+      if (currentProfile.role === 'master') {
+        btnToggleAdmin.style.display = 'inline-flex';
+        await showAdminView();
+      } else {
+        showUserView();
+        loadDraft();
+        goToStep(1);
+      }
+    } catch (err) {
+      forcePasswordErrorText.textContent = err.message || 'Erro ao definir a nova senha.';
+      forcePasswordError.style.display = 'block';
+    } finally {
+      btnForcePasswordSubmit.disabled = false;
+      btnForcePasswordSubmit.innerHTML = '<i class="fa-solid fa-check"></i> Definir Senha e Continuar';
+    }
   });
 
   btnToggleLoginPassword?.addEventListener('click', () => {

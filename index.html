@@ -78,6 +78,33 @@
       </div>
     </div>
 
+    <!-- FORCE PASSWORD CHANGE VIEW CONTAINER -->
+    <div id="force-password-view" class="login-container" style="display:none;">
+      <div class="login-box">
+        <h2><i class="fa-solid fa-key"></i> Defina sua senha</h2>
+        <p class="login-subtitle">Você está usando uma senha provisória cadastrada pela CGTI. Por segurança, defina uma nova senha, só sua, para continuar.</p>
+
+        <form id="force-password-form" novalidate>
+          <div class="login-field">
+            <label for="force-password-new">Nova senha</label>
+            <input type="password" id="force-password-new" class="form-input" autocomplete="new-password" required minlength="6">
+          </div>
+          <div class="login-field">
+            <label for="force-password-confirm">Confirmar nova senha</label>
+            <input type="password" id="force-password-confirm" class="form-input" autocomplete="new-password" required minlength="6">
+          </div>
+
+          <div id="force-password-error" class="login-error" style="display:none;">
+            <i class="fa-solid fa-circle-exclamation"></i> <span id="force-password-error-text"></span>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-force-password-submit" style="width:100%; justify-content:center; margin-top: 0.5rem;">
+            <i class="fa-solid fa-check"></i> Definir Senha e Continuar
+          </button>
+        </form>
+      </div>
+    </div>
+
     <!-- USER FORM VIEW CONTAINER -->
     <div id="user-view" style="display:none;">
       <!-- Wizard Step Indicator Bar -->
